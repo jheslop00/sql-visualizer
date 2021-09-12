@@ -62,42 +62,39 @@
     renderSchemas(schemas);
   };
 
+  const visualizeSql = (SQL, code) => {
+    const db = new SQL.Database();
+    const result = db.exec(code);
+    const queryResults = result.map(({columns, values}) => [columns, values]);
+
+    renderQueryResults(queryResults);
+    showSchema(db);
+  };
+
   $(document).ready(() => {
     const sqlJsConfig = { locateFile: filename => `scripts/${filename}` };
     initSqlJs(sqlJsConfig).then(SQL => {
-      const db = new SQL.Database();
-
-      db.run([
+      visualizeSql(SQL, [
         "CREATE TABLE User (",
         " id            UUID,",
         " username      VARCHAR(32),",
         " password_hash CHAR(64),",
         " full_name     VARCHAR(128)",
-        ");"
-      ].join("\n"));
-
-      db.run([
+        ");",
         "INSERT INTO User VALUES(",
         " 'f67cec3a-a11f-43e4-a1ba-9e31b5986868',",
         " 'john.doe',",
         " '69b0293f0d853cfee5f9f5877cd2f4556a9ff3d21f21344b055137792dd40cea',",
         " 'John Doe'",
-        ");"
-      ].join("\n"));
-
-      db.run([
+        ");",
         "INSERT INTO User VALUES(",
         " '167b28c0-106d-4380-ac83-bda04c200015',",
         " 'jane.doe',",
         " '5e468727aec056db63824327c19b96827b627c011b09ad88fd23511edf5ec9d8',",
         " 'Jane Doe'",
-        ");"
+        ");",
+        "SELECT * FROM User;"
       ].join("\n"));
-
-      const result = db.exec("SELECT * FROM User");
-      const queryResults = result.map(({columns, values}) => [columns, values]);
-      renderQueryResults(queryResults);
-      showSchema(db);
     });
   });
 })();
