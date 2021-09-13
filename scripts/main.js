@@ -1,6 +1,16 @@
 "use strict";
 
 (() => {
+  const hideErrorMessage = () => {
+    $("#error-message").hide();
+  };
+
+  const showErrorMessage = message => {
+    const errorMessageElement = $("#error-message");
+    errorMessageElement.show();
+    errorMessageElement.text(message);
+  };
+
   const renderTableRow = (cellType, values) => {
     const row = $(`<tr>`);
     const rowContents = values.map(value => {
@@ -64,7 +74,18 @@
 
   const visualizeSql = (SQL, code) => {
     const db = new SQL.Database();
-    const result = db.exec(code);
+
+    hideErrorMessage();
+    
+    let result = null;
+
+    try {
+      result = db.exec(code);
+    } catch(error) {
+      showErrorMessage(error.message);
+      return;
+    }
+
     const queryResults = result.map(({columns, values}) => [columns, values]);
 
     renderQueryResults(queryResults);
@@ -74,7 +95,8 @@
   $(document).ready(() => {
     const sqlJsConfig = { locateFile: filename => `scripts/${filename}` };
     initSqlJs(sqlJsConfig).then(SQL => {
-      $("#run-sql-form").on("submit", function() {
+      $("#run-sql-form").on("submit", function(e) {
+        e.preventDefault();
         const code = $(this.elements["sql-code"]).val();
         visualizeSql(SQL, code);
         return false;
